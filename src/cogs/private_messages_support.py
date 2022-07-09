@@ -5,6 +5,7 @@ from typing import Dict, List
 
 import babel
 import discord
+import pytz
 from babel import Locale
 from babel.dates import format_datetime, format_timedelta
 from discord import RawReactionActionEvent
@@ -13,6 +14,7 @@ from discord.utils import snowflake_time
 from tortoise import timezone
 
 from cogs.tags import TagMenuSource, TagName
+from utils import views
 from utils.bot_class import MyBot
 from utils.checks import NotInServer, NotInChannel
 from utils.cog_class import Cog
@@ -21,6 +23,11 @@ from utils.ctx_class import MyContext
 from utils.models import get_from_db, get_tag, DiscordUser, Player, SupportTicket, AccessLevel, Tag
 from utils.random_ducks import get_random_duck_file
 from utils.translations import get_translate_function
+from utils.views import CommandView, get_context_from_interaction, View
+
+
+def _(message):
+    return message
 
 
 class MirrorMenuPage(menus.MenuPages):
@@ -66,7 +73,112 @@ class MirrorMenuPage(menus.MenuPages):
         return super().stop()
 
 
+class CloseReasonSelect(discord.ui.Select):
+    reasons = {
+        # shown reason : Emoji, stored reason, tag_to_send
+        'No help needed': ('❌', 'No help needed', None),
+        'Support given': ('✅', 'Support was provided and the matter resolved', None),
+        'DM Commands': ('🤖', 'DM Commands', 'dm_commands'),
+        'Unrelated': ('⁉️', 'Not a support DM', 'dm_unrelated'),
+        'Spam': ('💬', 'Spam', None),
+        'Scam': ('☢️', 'User sent a scam message to the bot', 'scams'),
+        'Insults': ('🤬', 'Insults in DM', None),
+        'Unresponsive': ('☠️', 'User did not respond', None),
+        'Thanks': ('🙃', 'Complimented the bot', None),
+    }
+
+    def __init__(self, bot):
+        self.bot = bot
+
+        options = []
+
+        for reason_label, extra_info in self.reasons.items():
+            reason_emoji, stored_reason, tag_to_send = extra_info
+            options.append(discord.SelectOption(label=reason_label, emoji=reason_emoji))
+
+        super().__init__(custom_id="private_messages_support:close_select_reason", placeholder="Quick DM closing", min_values=1, max_values=1,
+                         options=options
+                         )
+
+    async def callback(self, interaction: discord.Interaction):
+        ctx = await get_context_from_interaction(self.bot, interaction)
+        reason_info = self.reasons[self.values[0]]
+        reason_emoji, stored_reason, tag_to_send = reason_info
+
+        close_command = self.bot.get_command('private_support close')
+        if tag_to_send:
+            await interaction.response.send_message(f"Closing with {stored_reason}, but sending the `{tag_to_send}` tag beforehand...", ephemeral=True)
+            tag_command = self.bot.get_command('private_support tag')
+            await ctx.invoke(tag_command, tag_name=tag_to_send)
+            await asyncio.sleep(1)
+        else:
+            await interaction.response.send_message(f"Closing with {stored_reason}...", ephemeral=True)
+
+        await ctx.invoke(close_command, reason=stored_reason)
+
+
+class CommonTagSelect(views.AutomaticDeferMixin, discord.ui.Select):
+    tags = {
+        # tag to send : Emoji, shown name
+        'setup': ('⚙️', 'How to setup'),
+        'quickguide': ('🦆', 'How to play'),
+        'dm_unrelated': ('⁉️', 'Unrelated DMs (close?)'),
+        'dm_commands': ('🤖', 'DM Commands (close?)'),
+        'leveling_up': ('☝️', 'Leveling up'),
+        'lore_v4': ('📖', 'Lore'),
+        'commands': ('❕', 'Commands list'),
+        'wiki': ('🌱', 'Wiki'),
+    }
+
+    def __init__(self, bot):
+        self.bot = bot
+
+        reverse_lookup = {}
+        options = []
+
+        for tag_name, extra_info in self.tags.items():
+            tag_emoji, tag_shown = extra_info
+            options.append(discord.SelectOption(label=tag_shown, emoji=tag_emoji))
+            reverse_lookup[tag_shown] = tag_name
+
+        self.reverse_lookup = reverse_lookup
+
+        super().__init__(custom_id="private_messages_support:common_tag_select", placeholder="Quick tag selector", min_values=1, max_values=1,
+                         options=options
+                         )
+
+    async def callback(self, interaction: discord.Interaction):
+        ctx = await get_context_from_interaction(self.bot, interaction)
+        tag_name = self.reverse_lookup[self.values[0]]
+
+        tag_command = self.bot.get_command('private_support tag')
+
+        await ctx.invoke(tag_command, tag_name=tag_name)
+
+
+class CloseReasonSelectView(View):
+    def __init__(self, bot):
+        super().__init__(bot, timeout=None)
+
+        self.add_item(CloseReasonSelect(bot))
+        self.add_item(CommonTagSelect(bot))
+
+
+def get_close_reason_view(bot, reason_shortcode, reason_stored):
+    close_command = bot.get_command('private_support close')
+    return CommandView(bot,
+                       close_command,
+                       persist=f"private_messages_support:close_reason:{reason_shortcode}",
+                       command_kwargs={"reason": reason_stored},
+                       label=f'Close the DM ({reason_shortcode})',
+                       style=discord.ButtonStyle.blurple)
+
+
 class PrivateMessagesSupport(Cog):
+    display_name = _("Support team: private messages")
+    help_priority = 15
+    help_color = 'red'
+
     def __init__(self, bot: MyBot, *args, **kwargs):
         super().__init__(bot, *args, **kwargs)
         self.webhook_cache: Dict[discord.TextChannel, discord.Webhook] = {}
@@ -78,9 +190,18 @@ class PrivateMessagesSupport(Cog):
         self.invites_regex = re.compile(
             r"""
                 discord      # Literally just discord
-                (?:app\s?\.\s?com\s?/invite|\.\s?gg)\s?/ # All the domains
+                (?:(?:app)?\s?\.\s?com\s?\/invite|\.\s?gg)\s?\/ # All the domains
                 ((?!.*[Ii10OolL]).[a-zA-Z0-9]{5,12}|[a-zA-Z0-9\-]{2,32}) # Rest of the fucking owl.
                 """, flags=re.VERBOSE | re.IGNORECASE)
+        self.views_added = False
+
+    async def on_ready(self):
+        if not self.views_added:
+            self.bot.add_view(CloseReasonSelectView(self.bot))
+            self.bot.add_view(get_close_reason_view(self.bot, "asked", "Asked closed"))
+            self.bot.add_view(get_close_reason_view(self.bot, "invites", "Sent the bot an invite"))
+
+            self.views_added = True
 
     def cog_unload(self):
         self.background_loop.cancel()
@@ -92,7 +213,7 @@ class PrivateMessagesSupport(Cog):
         If it's too old, consider the channel inactive and close the ticket.
         """
         category = await self.get_forwarding_category()
-        now = datetime.datetime.now()
+        now = timezone.now()
         one_day_ago = now - datetime.timedelta(days=1)
         for ticket_channel in category.text_channels:
             last_message_id = ticket_channel.last_message_id
@@ -137,11 +258,9 @@ class PrivateMessagesSupport(Cog):
                     inactivity_embed = discord.Embed(
                         color=discord.Color.orange(),
                         title=_("DM Timed Out"),
-                        description=_("It seems like nothing has been said here for a long time, "
-                                      "so I've gone ahead and closed your ticket, deleting its history. "
-                                      "Thanks for using DuckHunt DM support. "
-                                      "If you need anything else, feel free to open a new ticket by sending a message "
-                                      "here."),
+                        description=_("Tickets expire after 24 hours of inactivity.\n"
+                                      "Got a question? Ask it here or in [the support server](https://duckhunt.me/support).\n"
+                                      "Thank you for using the DuckHunt ticket system!"),
                     )
 
                     inactivity_embed.add_field(name=_("Support server"),
@@ -203,7 +322,7 @@ class PrivateMessagesSupport(Cog):
             self.bot.logger.debug(f"[SUPPORT] creating a webhook for {user.name}#{user.discriminator}.")
 
             webhook = await channel.create_webhook(name=f"{user.name}#{user.discriminator}",
-                                                   avatar=await user.avatar_url_as(format="png", size=512).read(),
+                                                   avatar=await user.display_avatar.replace(format="png", size=512).read(),
                                                    reason="Received a DM.")
             self.webhook_cache[channel] = webhook
             self.bot.logger.debug(f"[SUPPORT] channel created for {user.name}#{user.discriminator}.")
@@ -216,7 +335,7 @@ class PrivateMessagesSupport(Cog):
                 self.webhook_cache[channel] = webhook
         return channel
 
-    async def send_mirrored_message(self, channel: discord.TextChannel, user: discord.User, db_user=None,
+    async def send_mirrored_message(self, channel: discord.TextChannel, user: discord.User, db_user=None, support_view=None,
                                     **send_kwargs):
         self.bot.logger.info(f"[SUPPORT] Sending mirror message to {user.name}#{user.discriminator}")
 
@@ -224,7 +343,10 @@ class PrivateMessagesSupport(Cog):
         language = db_user.language
         _ = get_translate_function(self.bot, language)
 
-        channel_message = await channel.send(**send_kwargs)
+        if support_view:
+            channel_message = await support_view.send(channel, **send_kwargs)
+        else:
+            channel_message = await channel.send(**send_kwargs)
 
         try:
             await user.send(**send_kwargs)
@@ -261,7 +383,7 @@ class PrivateMessagesSupport(Cog):
                                  "provided for support purposes only. \n" \
                                  "Nothing was sent to the user about this."
 
-        info_embed.set_author(name=f"{user.name}#{user.discriminator}", icon_url=str(user.avatar_url))
+        info_embed.set_author(name=f"{user.name}#{user.discriminator}", icon_url=str(user.display_avatar.url))
         info_embed.set_footer(text="Private statistics")
 
         ticket_count = await db_user.support_ticket_count()
@@ -299,7 +421,10 @@ class PrivateMessagesSupport(Cog):
                                    add_direction=True,
                                    format="short",
                                    locale="en")
-            value = f"Closed {ftd} by {last_ticket.closed_by.name}."
+            if last_ticket.closed_by:
+                value = f"Closed {ftd} by {last_ticket.closed_by.name}."
+            else:
+                value = f"Closed {ftd} by the bot."
 
             if last_ticket.close_reason:
                 value += f"\n{last_ticket.close_reason}"
@@ -320,19 +445,17 @@ class PrivateMessagesSupport(Cog):
                 info_embed.add_field(name=f"#{player_data.channel} [DISABLED]",
                                      value=f"[Statistics](https://duckhunt.me/data/channels/{player_data.channel.discord_id}/{user.id}) - {player_data.experience} exp")
 
-        await channel.send(embed=info_embed)
+        await CloseReasonSelectView(self.bot).send(channel, embed=info_embed)
 
         _ = get_translate_function(self.bot, db_user.language)
 
         welcome_embed = discord.Embed(color=discord.Color.green(), title="Support ticket opened")
         welcome_embed.description = \
-            _("Welcome to DuckHunt private messages support.\n"
-              "Messages here are relayed to a select group of volunteers and bot moderators to help you use the bot. "
-              "For general questions, we also have a support server "
-              "[here](https://duckhunt.me/support).\n"
-              "If you opened the ticket by mistake, just say `close` and we'll close it for you, otherwise, we'll get "
-              "back to you in a few minutes.")
-        welcome_embed.set_footer(text=_("Support tickets are deleted after 24 hours of inactivity"))
+            _("DMing any message to the bot will open a ticket.\n"
+              "You have a question? [Ask it](https://dontasktoask.com) to our human volunteers.\n"
+              "You opened the ticket by mistake? Type `close` (*once, no prefix needed*) and we, human volunteers will close it.")
+
+        welcome_embed.set_footer(text=_("Support tickets are automatically deleted after 24 hours of inactivity"))
 
         try:
             await user.send(embed=welcome_embed)
@@ -352,7 +475,7 @@ class PrivateMessagesSupport(Cog):
 
         support_embed = discord.Embed(color=discord.Color.blurple(), title="Support response")
         support_embed.set_author(name=f"{message.author.name}#{message.author.discriminator}",
-                                 icon_url=str(message.author.avatar_url))
+                                 icon_url=str(message.author.display_avatar.url))
         support_embed.description = message.content
 
         if len(message.attachments) == 1:
@@ -391,14 +514,17 @@ class PrivateMessagesSupport(Cog):
             dm_invite_embed = discord.Embed(color=discord.Color.purple(),
                                             title=_("This is not how you invite DuckHunt."))
             dm_invite_embed.description = \
-                _("DuckHunt, like other discord bots, can't join servers by using an invite link.\n"
-                  "You instead have to be a server Administrator and to invite the bot by following "
-                  "[this guide](https://duckhunt.me/docs/bot-administration/admin-quickstart). If you need more help, "
+                _("To invite DuckHunt, you need :\n"
+                  "- To be a server Administrator.\n"
+                  "- To click on the [following link](https://duckhunt.me/invite)\n"
+                  "More info on [this guide](https://duckhunt.me/docs/bot-administration/admin-quickstart). If you need more help, "
                   "you can ask here and we'll get back to you.")
 
             dm_invite_embed.set_footer(text=_("This is an automatic message."))
 
-            await self.send_mirrored_message(forwarding_channel, user, db_user=db_user, embed=dm_invite_embed)
+            view = get_close_reason_view(self.bot, "invites", "Sent the bot an invite")
+
+            await self.send_mirrored_message(forwarding_channel, user, db_user=db_user, embed=dm_invite_embed, support_view=view)
 
     async def handle_dm_message(self, message: discord.Message):
         self.bot.logger.info(f"[SUPPORT] received a message from {message.author.name}#{message.author.discriminator}")
@@ -416,11 +542,20 @@ class PrivateMessagesSupport(Cog):
 
         self.bot.logger.debug(f"[SUPPORT] {message.author.name}#{message.author.discriminator} message prepared.")
 
-        await forwarding_webhook.send(content=message.content,
-                                      embeds=embeds,
-                                      files=files,
-                                      allowed_mentions=discord.AllowedMentions.none(),
-                                      wait=True)
+        send_kwargs = {
+            "content": message.content,
+            "embeds": embeds,
+            "files": files,
+            "allowed_mentions": discord.AllowedMentions.none(),
+            "wait": True
+        }
+
+        if "close" in message.content.lower():
+            view = get_close_reason_view(self.bot, "asked", "Asked closed")
+            await view.send(forwarding_webhook,
+                            **send_kwargs)
+        else:
+            await forwarding_webhook.send(**send_kwargs)
 
         self.bot.logger.debug(f"[SUPPORT] {message.author.name}#{message.author.discriminator} message forwarded.")
 
@@ -513,23 +648,22 @@ class PrivateMessagesSupport(Cog):
         close_embed.add_field(name=_("Support server"), value=_("For all your questions, there is a support server. "
                                                                 "Click [here](https://duckhunt.me/support) to join."))
 
-        file = await get_random_duck_file(self.bot)
+        file, debug = await get_random_duck_file(self.bot)
         close_embed.set_image(url="attachment://random_duck.png")
 
-        async with ctx.typing():
-            await ctx.send(content="🚮 Deleting channel... Don't send messages anymore!")
+        await ctx.send(content="🚮 Deleting channel... Don't send messages anymore!")
 
-            try:
-                await user.send(file=file, embed=close_embed)
-            except:
-                pass
+        try:
+            await user.send(file=file, embed=close_embed)
+        except:
+            pass
 
-            await asyncio.sleep(5)  # To let people stop writing
+        await asyncio.sleep(5)  # To let people stop writing
 
-            await self.clear_caches(ctx.channel)
+        await self.clear_caches(ctx.channel)
 
-            await ctx.channel.delete(
-                reason=f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) closed the DM.")
+        await ctx.channel.delete(
+            reason=f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id}) closed the DM.")
 
     @private_support.command(aliases=["not_support", "huh"])
     async def close_silent(self, ctx: MyContext, *, reason: str = None):
@@ -594,7 +728,11 @@ class PrivateMessagesSupport(Cog):
             support_pages.other = dm_pages
 
             await support_pages.start(ctx)
-            await dm_pages.start(ctx, channel=await user.create_dm())
+            try:
+                await dm_pages.start(ctx, channel=await user.create_dm())
+            except discord.Forbidden as e:
+                _ = await ctx.get_translate_function()
+                await ctx.reply(_("❌ Can't send a message to this user: {e}.", e=e))
         else:
             _ = await ctx.get_translate_function()
             await ctx.reply(_("❌ There is no tag with that name."))
@@ -634,7 +772,7 @@ class PrivateMessagesSupport(Cog):
                               )
 
         embed.set_author(name=f"{ctx.author.name}#{ctx.author.discriminator}",
-                         icon_url=str(ctx.author.avatar_url))
+                         icon_url=str(ctx.author.display_avatar.url))
 
         embed.set_footer(text=_("Press ✅ to accept the change, or do nothing to reject. "
                                 "Use the [dh!settings my_lang language_code] command in a game channel to edit later."))

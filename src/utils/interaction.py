@@ -69,6 +69,7 @@ async def delete_messages_if_message_removed(bot: 'MyBot', watch_message: discor
     except asyncio.TimeoutError:
         pass
     else:
+        bot.logger.debug(f"Deleting message {message_to_delete.id} following deletion of invoke - {watch_message.id}")
         await message_to_delete.delete(delay=(random.randrange(1, 10) / 10))
 
 
@@ -102,9 +103,11 @@ async def create_and_save_webhook(bot: 'MyBot', channel: typing.Union[DiscordCha
             webhook: discord.Webhook
             if webhook.name == "DuckHunt":
                 db_channel.webhook_urls.append(webhook.url)
-        if len(db_channel.webhook_urls) == 0 or force:
+        if len(db_channel.webhook_urls) == 0 or (force and len(db_channel.webhook_urls) <= 5):
             webhook = await channel.create_webhook(name="DuckHunt", reason="Better Ducks")
             db_channel.webhook_urls.append(webhook.url)
+        else:
+            return None
 
     except discord.Forbidden:
         db_channel.use_webhooks = False
@@ -126,8 +129,8 @@ async def get_webhook_if_possible(bot: 'MyBot', channel: typing.Union[DiscordCha
     else:
         url = random.choice(db_channel.webhook_urls)
         try:
-            webhook = discord.Webhook.from_url(url, adapter=discord.AsyncWebhookAdapter(bot.client_session))
-        except discord.InvalidArgument:
+            webhook = discord.Webhook.from_url(url, session=bot.client_session)
+        except ValueError:
             db_channel.webhook_urls.remove(url)
             await db_channel.save()
             webhook = None
@@ -164,7 +167,7 @@ def anti_bot_zero_width(mystr: str):
 
 async def make_message_embed(message: discord.Message):
     embed = discord.Embed(color=discord.Colour.blurple())
-    embed.set_author(name=message.author.name, icon_url=str(message.author.avatar_url))
+    embed.set_author(name=message.author.name, icon_url=str(message.author.display_avatar.url))
     embed.description = message.content
 
     if len(message.attachments) == 1:
@@ -180,13 +183,13 @@ async def make_message_embed(message: discord.Message):
 
     if not message.guild:
         embed.set_footer(text=f"Private message",
-                         icon_url=str(message.guild.icon_url))
-    elif message.channel.nsfw:
+                         icon_url=str(message.guild.icon.url))
+    elif message.channel.is_nsfw():
         embed.set_footer(text=f"{message.guild.name}: [NSFW] #{message.channel.name}",
-                         icon_url=str(message.guild.icon_url))
+                         icon_url=str(message.guild.icon.url))
     else:
         embed.set_footer(text=f"{message.guild.name}: #{message.channel.name}",
-                         icon_url=str(message.guild.icon_url))
+                         icon_url=str(message.guild.icon.url))
 
     embed.timestamp = message.created_at
 

@@ -1,6 +1,9 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2021-06-07 12:32+0200\n"
+"POT-Creation-Date: 2022-04-27 14:44+0200\n"
 "MIME-Version: 1.0\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
@@ -19,6 +22,12 @@ msgid "Sends the link you can use to vote for DuckHunt on bot lists"
 msgstr ""
 "Stuurt de link die je kan gebruiken om op DuckHunt te stemmen op de "
 "botlijsten"
+
+msgid "Create a Command view for a given command."
+msgstr ""
+
+msgid "Create a GamePadView to allow playing the game with buttons."
+msgstr ""
 
 msgid ""
 "Invite someone to the beta server, letting them try the bot before the "
@@ -89,6 +98,59 @@ msgid "Removes all ducks from the channel"
 msgstr "Verwijdert alle eenden uit het kanaal."
 
 msgid ""
+"Manage the bot current state by starting and stopping ducks spawning, "
+"leaving, and planning ducks spawn for the\n"
+"day.\n"
+"\n"
+"These commands do not use the translation system, and will always show in "
+"english"
+msgstr ""
+"Beheer de huidige status van de bot door het starten en stoppen van het "
+"spawnen van eenden, het verlaten van eenden en het plannen van het spawnen "
+"van eenden voor de dag. \n"
+"\n"
+"Deze commando's maken geen gebruik van het vertaalsysteem en worden altijd "
+"in het Engels weergegeven"
+
+msgid ""
+"Reset ducks planning, setting the ducks left to spawn counts to a value "
+"proportional to the time left spawning\n"
+"ducks today. This is executed everyday at midnight."
+msgstr ""
+"Reset eendenplanning door het aantal eenden dat overblijft om te spawnen in "
+"te stellen op een waarde die evenredig is met de tijd die vandaag nog "
+"resteert. Dit wordt elke dag om middernacht uitgevoerd."
+
+msgid ""
+"Stop ducks from spawning immediately, everywhere. Ducks don't get removed "
+"from the planification,\n"
+"so once the stop is over, ducks will spawn more quickly than usual.\n"
+"\n"
+"Duck will still be able to leave, even if this lock is set."
+msgstr ""
+"Voorkom dat eenden spawnen, onmiddellijk en overal. Eenden worden niet "
+"verwijderd uit de planificatie, dus zodra de stop voorbij is, zullen eenden "
+"sneller spawnen dan normaal.\n"
+"\n"
+"Eenden kunnen nog steeds weggaan, zelfs als dit slot is ingesteld."
+
+msgid ""
+"Allow ducks spawning again, everywhere. Ducks will spawn more quickly than "
+"usual if a planification isn't done."
+msgstr ""
+"Laat eenden weer spawnen, overal. Eenden zullen sneller dan normaal spawnen "
+"als er geen planificatie is gedaan."
+
+msgid "Force a boss to spawn"
+msgstr "Dwing een baas om te spawnen"
+
+msgid "Force the current event to change, and reroll a new one."
+msgstr "Dwing de huidige gebeurtenis te veranderen, en rol een nieuwe."
+
+msgid "Congratulate an user giving them a trophy."
+msgstr ""
+
+msgid ""
 "Content-aware carving of an image/avatar, resizing it to reduce the width "
 "and height,\n"
 "loosing as few details as we can.\n"
@@ -120,6 +182,21 @@ msgid ""
 "    browser"
 msgstr ""
 
+msgid "Buttons to direct user to a cog help."
+msgstr ""
+
+msgid "Show buttons for all the cogs in a bot."
+msgstr ""
+
+msgid "Buttons to direct user to a group help"
+msgstr ""
+
+msgid "Buttons to direct user to a command help"
+msgstr ""
+
+msgid "Show buttons for all the commands and groups in a cog or a group."
+msgstr ""
+
 msgid "Alias for dh!inv use, so that you can just type dh!use instead."
 msgstr ""
 "Alias voor dh!inv use, zodat je in plaats daarvan gewoon dh!use kunt typen."
@@ -142,6 +219,67 @@ msgstr "Geef iets aan een speler."
 
 msgid "Use one of the items in your inventory."
 msgstr "Gebruik een van de spullen uit je inventaris."
+
+msgid ""
+"Alias for dh!landmine landmine, so that you can just type dh!place instead."
+msgstr ""
+
+msgid ""
+"Alias for dh!landmine defuse_kit, so that you can just type dh!defuse "
+"instead."
+msgstr ""
+
+msgid "This command group contains all commands related to \"Landmines\" game."
+msgstr ""
+
+msgid "View your event statistics."
+msgstr ""
+
+msgid "This command explains how to place a landmine"
+msgstr ""
+
+msgid ""
+"[THIS COMMAND WORKS IN DMs]\n"
+"Buy a landmine that will trigger on a specific word.\n"
+"\n"
+"A landmine has a value, at least greater than 2, that will be used to "
+"determine it's price and the damage done\n"
+"to the person that steps on it.\n"
+"The word must be at least 2 characters long, and must only contain letters. "
+"The steps are case-insensitive.\n"
+"The longer it is, the higher the power. An exploding landmine gives you the "
+"point damage, and half it's value\n"
+"back."
+msgstr ""
+
+msgid ""
+"Buy a shield that will be placed on a given word. A shield will defuse all "
+"landmines placed on that word,\n"
+"and will prevent further landmines from being placed on it.\n"
+"\n"
+"A shield is a very powerful item, that'll cost 500 points for any given word."
+"\n"
+"You can however add a message that will be sent when trying to place a mine."
+msgstr ""
+
+msgid ""
+"Buy a defuse kit. You can use it on a sentence. If it's used, you collect "
+"the landmine value, minus the price\n"
+"of the defuse kit (30 points). If you don't use it, you'll just have to pay "
+"a restocking fee of 15 points.\n"
+"\n"
+"You need at least 30 points to use one."
+msgstr ""
+
+msgid "Show statistics about landmines on this server."
+msgstr ""
+
+msgid ""
+"This function count the number of events matching a predicate and filters "
+"the events list inplace following another.\n"
+"\n"
+"It returns the count of matching events."
+msgstr ""
 
 msgid "Prestige related commands. Reset your adventure for exclusive bonuses."
 msgstr ""
@@ -270,14 +408,17 @@ msgstr ""
 "Api keys (local or global) are uuid4, and look like this : `d84af260-c806-"
 "4066-8387-1d5144b7fa72`"
 
-msgid "/channels/\n"
+msgid ""
+"/channels/\n"
 "\n"
 "Get all channels enabled on the bot"
-msgstr "/channels/\n"
+msgstr ""
+"/channels/\n"
 "\n"
 "Krijg alle kanalen die aanstaan voor de bot."
 
-msgid "/channels/<channel_id>\n"
+msgid ""
+"/channels/<channel_id>\n"
 "\n"
 "Get information about a specific channel ID"
 msgstr ""
@@ -288,46 +429,45 @@ msgstr ""
 msgid ""
 "/channels/<channel_id>/settings\n"
 "\n"
-"Get information about a specific channel ID"
+"Get settings for a specific channel ID"
 msgstr ""
-"/channels/<channel_id>/settings\n"
-"\n"
-"Krijg informatie over een specifiek kanaal-ID."
 
-msgid "/channels/<channel_id>/top\n"
+msgid ""
+"/channels/<channel_id>/top\n"
 "\n"
-"Get players data, ordered by experience"
-msgstr "/channels/<channel_id>/top\n"
-"\n"
-"Krijg spelerdata, gesorteerd op ervaring."
+"Get players data for a specific channel ID, ordered by experience"
+msgstr ""
 
 msgid ""
 "/channels/<channel_id>/player/<player_id>\n"
 "\n"
-"Get players data, ordered by experience"
+"Get information for a specific player ID and channel ID"
 msgstr ""
-"/channels/<channel_id>/player/<player_id>\n"
-"\n"
-"Krijg spelerdata, gesorteerd op ervaring."
 
-msgid "/help/commands\n"
+msgid ""
+"/help/commands\n"
 "\n"
 "Get list of commands"
-msgstr "/help/commands\n"
+msgstr ""
+"/help/commands\n"
 "\n"
 "krijg de lijst van commando's"
 
-msgid "/status\n"
+msgid ""
+"/status\n"
 "\n"
 "Check the status of every shard the bot is hosting."
-msgstr "/status\n"
+msgstr ""
+"/status\n"
 "\n"
 "Controleer de status van elke shard die de bot host."
 
-msgid "/stats\n"
+msgid ""
+"/stats\n"
 "\n"
 "Get some global statistics about the bot."
-msgstr "/stats\n"
+msgstr ""
+"/stats\n"
 "\n"
 "Krijg wat globale statistieken over de bot."
 
@@ -446,6 +586,14 @@ msgstr ""
 "Super eenden hebben tonnen leven !\n"
 "\n"
 "Alle andere instellingen worden teruggezet naar de standaardwaarden."
+
+msgid ""
+"Math lessons gamemode.\n"
+"\n"
+"Most of the ducks are Pr. Ducks.\n"
+"\n"
+"All the other settings are reset to their default values."
+msgstr ""
 
 msgid ""
 "Change/view the server prefix.\n"
@@ -664,6 +812,19 @@ msgstr "Bekijk de huidige machtigingen."
 
 msgid "Edit the current permissions for a specific user"
 msgstr "Bewerk de huidige machtigingen voor een specifieke gebruiker."
+
+msgid ""
+"Allow the landmines game to take place here.\n"
+"\n"
+"This means that messages sent here will award points, and mines can be "
+"stpped on here."
+msgstr ""
+
+msgid ""
+"Allow landmines commands to be ran in this channel.\n"
+"\n"
+"This is useful to limit defuses, stats and more to a selected channel."
+msgstr ""
 
 msgid "Set your preference on whether replies from the bot should ping you"
 msgstr "Stel je voorkeur in voor het pingen van jou bij antwoorden van de bot"
@@ -1006,59 +1167,6 @@ msgstr ""
 "De tellers worden elke keer gereset als de bot opnieuw wordt opgestart."
 
 msgid ""
-"Manage the bot current state by starting and stopping ducks spawning, "
-"leaving, and planning ducks spawn for the\n"
-"day.\n"
-"\n"
-"These commands do not use the translation system, and will always show in "
-"english"
-msgstr ""
-"Beheer de huidige status van de bot door het starten en stoppen van het "
-"spawnen van eenden, het verlaten van eenden en het plannen van het spawnen "
-"van eenden voor de dag. \n"
-"\n"
-"Deze commando's maken geen gebruik van het vertaalsysteem en worden altijd "
-"in het Engels weergegeven"
-
-msgid ""
-"Reset ducks planning, setting the ducks left to spawn counts to a value "
-"proportional to the time left spawning\n"
-"ducks today. This is executed everyday at midnight."
-msgstr ""
-"Reset eendenplanning door het aantal eenden dat overblijft om te spawnen in "
-"te stellen op een waarde die evenredig is met de tijd die vandaag nog "
-"resteert. Dit wordt elke dag om middernacht uitgevoerd."
-
-msgid ""
-"Stop ducks from spawning immediately, everywhere. Ducks don't get removed "
-"from the planification,\n"
-"so once the stop is over, ducks will spawn more quickly than usual.\n"
-"\n"
-"Duck will still be able to leave, even if this lock is set."
-msgstr ""
-"Voorkom dat eenden spawnen, onmiddellijk en overal. Eenden worden niet "
-"verwijderd uit de planificatie, dus zodra de stop voorbij is, zullen eenden "
-"sneller spawnen dan normaal.\n"
-"\n"
-"Eenden kunnen nog steeds weggaan, zelfs als dit slot is ingesteld."
-
-msgid ""
-"Allow ducks spawning again, everywhere. Ducks will spawn more quickly than "
-"usual if a planification isn't done."
-msgstr ""
-"Laat eenden weer spawnen, overal. Eenden zullen sneller dan normaal spawnen "
-"als er geen planificatie is gedaan."
-
-msgid "Force a boss to spawn"
-msgstr "Dwing een baas om te spawnen"
-
-msgid "Force the current event to change, and reroll a new one."
-msgstr "Dwing de huidige gebeurtenis te veranderen, en rol een nieuwe."
-
-msgid "Congratulate an user giving them a trophy."
-msgstr ""
-
-msgid ""
 "Show a given tag based on the name.\n"
 "\n"
 "The command accept tags names or aliases, and will display then in a nice "
@@ -1094,6 +1202,9 @@ msgstr ""
 msgid ""
 "View the raw version of the tag, with markdown escaped. This is useful to "
 "use as a base for editing a tag."
+msgstr ""
+
+msgid "Voting"
 msgstr ""
 
 msgid "Please wait while I check where you can vote..."
@@ -1139,6 +1250,24 @@ msgstr "Je kunt stemmen op {bl_name}"
 msgid "You might be able to vote on {bl_name}"
 msgstr "Je kunt misschien stemmen op {bl_name}"
 
+msgid "🔫 Bang"
+msgstr ""
+
+msgid "🤗 Hug"
+msgstr ""
+
+msgid "♻️ Reload"
+msgstr ""
+
+msgid "Buy a magazine"
+msgstr ""
+
+msgid "Buy a bullet"
+msgstr ""
+
+msgid "🍀 Buy a clover"
+msgstr ""
+
 msgid "{monitored_player.mention}, RPG cooldown: **{name}** expired."
 msgstr "{monitored_player.mention}, RPG cooldown: **{name}** expired."
 
@@ -1152,6 +1281,9 @@ msgstr ""
 "{rpg_role.mention}, you might want to click the reaction above/do what the "
 "bot says."
 
+msgid "Hunting"
+msgstr ""
+
 msgid ""
 "The bot is still starting up, please wait a minute and retry. Ducks haven't "
 "been lost."
@@ -1160,11 +1292,9 @@ msgstr ""
 "Eenden zijn niet verloren gegaan."
 
 msgid ""
-"☠️ It's a little cold in there... Maybe because **you are DEAD**! have you "
-"tried eating BRAINS ? `{ctx.prefix}revive`..."
+"☠️ It's a little cold in there... Maybe because **you are DEAD**! Have you "
+"tried eating BRAINS? `{ctx.prefix}revive`..."
 msgstr ""
-"☠️ Het is daar een beetje koud ... Misschien omdat **je DOOD bent**! heb je "
-"geprobeerd HERSENEN te eten?  '{ctx.prefix} revive' ..."
 
 msgid ""
 "🚰 Come on! Your clothes are wet, at least dry them (for **{time_delta}**) "
@@ -1194,11 +1324,9 @@ msgstr ""
 "reload`)"
 
 msgid ""
-"🦉 Backpack empty ! Buy magazines | **Bullets**: 0/{max_bullets} | Magazines:"
-" 0/{max_magazines} [**Autoreload failed**]"
+"🦉 Backpack empty! Buy magazines | **Bullets**: 0/{max_bullets} | Magazines: "
+"0/{max_magazines} [**Autoreload failed**]"
 msgstr ""
-"🦉 Rugzak leeg! Magazijnen kopen | **Kogels**: 0 / {max_bullets} | "
-"Magazijnen : 0 / {max_magazines} [**Automatisch laden mislukt**]"
 
 msgid ""
 "🦉 Magazine empty ! Reload or buy bullets | **Bullets**: 0/{max_bullets} | "
@@ -1387,14 +1515,25 @@ msgid "🌳 You hugged the tree... Thanks!"
 msgstr "🌳 Je knuffelde de boom... Bedankt!"
 
 msgid ""
-"{you.mention} hugged {other.mention}. The developer of the bot is really "
-"happy that you are loving it."
+"{you_mention} hugged {target_mention}. The developer of the bot is really "
+"happy that you love it."
 msgstr ""
-"{you.mention} knuffelde {other.mention}. De ontwikkelaar van de bot is echt "
-"blij dat je er van houdt."
 
-msgid "{you.mention} hugged {other.mention}. They feel loved."
-msgstr "{you.mention} knuffelde {other.mention}. Ze voelen zich geliefd."
+msgid ""
+"{you_mention} hugged {target_mention}. They hate you even more for hugging "
+"them. Don't know why tho... Try shooting them in the face."
+msgstr ""
+
+msgid ""
+"{you_mention}, you just hugged yourself. You feel a little lonely, don't "
+"you?"
+msgstr ""
+
+msgid "{you_mention} hugged {target_mention}. They feel loved."
+msgstr ""
+
+msgid "You hugged a tree, Wizzz?!"
+msgstr ""
 
 msgid "What are you trying to hug, exactly? A tree?"
 msgstr "Wat probeer je precies te knuffelen? Een boom?"
@@ -1402,8 +1541,11 @@ msgstr "Wat probeer je precies te knuffelen? Een boom?"
 msgid "You are already alive and well."
 msgstr "Je bent levend en wel."
 
-msgid "You eat {brains} 🧠 and regain consiousness."
-msgstr "Je eet {brains} 🧠 en komt weer bij bewustzijn."
+msgid "You eat {brains} 🧠 and regain consciousness."
+msgstr ""
+
+msgid "Admin: Spawning"
+msgstr ""
 
 msgid ""
 "{ducks_spawned_count} ducks are on the channel, {ducks_left} ducks left to "
@@ -1427,6 +1569,9 @@ msgstr ""
 
 msgid "{ducks_spawned_count} ducks removed."
 msgstr "{ducks_spawned_count} eenden verwijderd."
+
+msgid "Support team: emergencies"
+msgstr ""
 
 msgid ""
 "There was an error converting one of your arguments with {exception."
@@ -1556,6 +1701,12 @@ msgid ""
 "channel with `dh!settings enabled True`."
 msgstr ""
 
+msgid ""
+"Landmines commands cannot be ran on this channel. Admins can disable this "
+"message by running `dh!settings channel_disabled_message False`, or can "
+"enable the channel with `dh!settings landmines_commands_enabled True`."
+msgstr ""
+
 msgid "Check error running this command: {err_data}"
 msgstr ""
 
@@ -1606,6 +1757,33 @@ msgstr ""
 "niet afkomstig is van CommandError en niet wordt afgehandeld door onze "
 "foutbehandelaar. Informeer de eigenaar."
 
+msgid "DuckHunt help"
+msgstr ""
+
+msgid ""
+"**Welcome to DuckHunt**\n"
+"\n"
+"This is a help command designed to let you find all the commands in the bot.\n"
+"However, it's *not* the best way to get started with it. I suggest reading "
+"the wiki instead, here's [a link](https://duckhunt.me/docs).\n"
+"If you have questions, you can DM the bot, or join the [support "
+"server](https://duckhunt.me/support).\n"
+"Thanks for playing."
+msgstr ""
+
+msgid "Use {prefix}{help} [command] for more info on a command."
+msgstr ""
+"Gebruik {prefix}{help} [commando] voor meer informatie over een commando."
+
+msgid "{cog} help"
+msgstr ""
+
+msgid "... More available online"
+msgstr ""
+
+msgid "Inventory"
+msgstr ""
+
 msgid "Your inventory"
 msgstr "Je inventaris."
 
@@ -1631,6 +1809,216 @@ msgid "❌ You can't use this item that many times."
 msgstr ""
 
 msgid "❌ You don't have that item."
+msgstr ""
+
+msgid "Landmines"
+msgstr ""
+
+msgid ""
+"💥 You stepped on a `{landmine.word}` landmine placed {td} ago by "
+"<@{placed_by_member.user_id}>. It exploded, taking away **{explosion_value} "
+"points** from your account.\n"
+"\n"
+"<@{placed_by_member.user_id}> message:\n"
+"{message_text}"
+msgstr ""
+
+msgid ""
+"💥 You stepped on a `{landmine.word}` landmine placed {td} ago by "
+"<@{placed_by_member.user_id}>. It exploded, taking away **{explosion_value} "
+"points** from your account.\n"
+"\n"
+msgstr ""
+
+msgid "They can't play the game :("
+msgstr ""
+
+msgid "{target.name} event statistics"
+msgstr ""
+
+msgid ""
+"The most important currency in the game are the points, which are used in "
+"the shop to buy stuff. The available points show how many ponts you have and "
+"how many you acquired in total.\n"
+"You can get points by sending (long) messages. Some shop items may help you "
+"get more. Be careful not to spam, server rules **still apply** during the "
+"event. At the end of the game, the player having the greater amount of "
+"points will win."
+msgstr ""
+
+msgid "Available"
+msgstr ""
+
+msgid "{db_target.points_current} points"
+msgstr ""
+
+msgid "Messages sent"
+msgstr ""
+
+msgid "{db_target.messages_sent} ({db_target.words_sent} words)"
+msgstr ""
+
+msgid "Points won by landmines"
+msgstr ""
+
+msgid "{db_target.points_won} points"
+msgstr ""
+
+msgid "Points recovered by defusing landmines"
+msgstr ""
+
+msgid "{db_target.points_recovered} points"
+msgstr ""
+
+msgid "Points acquired by talking"
+msgstr ""
+
+msgid "{db_target.points_acquired} points"
+msgstr ""
+
+msgid "Points exploded by stepping on mines"
+msgstr ""
+
+msgid "{db_target.points_exploded} points"
+msgstr ""
+
+msgid "Points spent in the shop"
+msgstr ""
+
+msgid "{db_target.points_spent} points"
+msgstr ""
+
+msgid ""
+"For more information on how to place a mine, run the `dh!lm landmines` "
+"command."
+msgstr ""
+
+msgid ""
+"To place a landmine, send a DM to the bot with the following command: ```\n"
+"dh!landmine place {ctx.guild.id} your_mine_value your_mine_word "
+"a_message_to_send_when_the_mine_explodes\n"
+"```\n"
+"The value must be at least 50 points, and a word must be at least 3 "
+"characters long."
+msgstr ""
+
+msgid ""
+"❌ On what server do you want to place this landmine ? You need to add the "
+"Guild ID at the start of your command. See `dh!landmines landmine_how_to`"
+msgstr ""
+
+msgid "❌ You aren't in that guild."
+msgstr ""
+
+msgid "❌ A landmine must have a value higher than 50."
+msgstr ""
+
+msgid "❌ The message left on the landmine must be less than 1500 characters."
+msgstr ""
+
+msgid "❌ The word must only contain letters."
+msgstr ""
+
+msgid ""
+"❌ This word is currently protected by {user.name}#{user.discriminator}, you "
+"can't place a mine on it — {protect.message}."
+msgstr ""
+
+msgid ""
+"❌ This word is currently protected by {user.name}#{user.discriminator}, you "
+"can't place a mine on it."
+msgstr ""
+
+msgid ""
+"❌ You don't have {value} points, you can't buy a landmine as powerful as "
+"this."
+msgstr ""
+
+msgid ""
+"💣️ You placed a landmine on `{word}` that can give you at most "
+"`{base_value}` points."
+msgstr ""
+
+msgid "❌ Please give one valid words to protect."
+msgstr ""
+
+msgid "❌ This word is already protected by {user.name}#{user.discriminator}."
+msgstr ""
+
+msgid ""
+"❌ You don't have 500 points, so you can't buy a shield to protect a word."
+msgstr ""
+
+msgid "You placed a shield on `{word}` for 500 points."
+msgstr ""
+
+msgid ""
+"- <@{placed_by_member.user_id}> mine for {value} points (placed {td} ago)"
+msgstr ""
+
+msgid "There were no active landmines on that word to be defused."
+msgstr ""
+
+msgid "❌ Please give (as much) valid words as you want to the defuse kit."
+msgstr ""
+
+msgid "❌ You don't have 30 points, so you can't buy a defuse kit."
+msgstr ""
+
+msgid ""
+"💰️ You used the defuse kit on `{landmine.word}`, and defused "
+"<@{placed_by_member.user_id}> landmine (placed {td} ago), that has a "
+"`{landmine.value}` points value.You got {got_points} points, congratulations."
+""
+msgstr ""
+
+msgid ""
+"💸️ You used the defuse kit on `{landmine.word}`, and defused "
+"<@{placed_by_member.user_id}> landmine (placed {td} ago), that has a "
+"`{landmine.value}` points value.You've lost {-got_points} points, because "
+"the value of the landmine was lower than the defuse kit price. Sorry!"
+msgstr ""
+
+msgid ""
+"♻️️ You didn't use the defuse kit, and sold it back to the shop. You are "
+"sure that there isn't any mine on any of those words: \n"
+"```\n"
+"{words}\n"
+"```"
+msgstr ""
+
+msgid "Landmines statistics"
+msgstr ""
+
+msgid "Players tracked"
+msgstr ""
+
+msgid "Mines count"
+msgstr ""
+
+msgid "{current_mines_count} mines placed, {total_mines_count} created"
+msgstr ""
+
+msgid "Biggest active mine"
+msgstr ""
+
+msgid ""
+"Valued at `{biggest_mine.value} ({letters} letters)`, placed by <@{user}>"
+msgstr ""
+
+msgid "Players in the negative"
+msgstr ""
+
+msgid "Event scoreboard"
+msgstr ""
+
+msgid "{points} points"
+msgstr ""
+
+msgid "Support team: monitoring"
+msgstr ""
+
+msgid "Prestige"
 msgstr ""
 
 msgid "Prestige Information"
@@ -1779,14 +2167,17 @@ msgid ""
 msgstr ""
 "💰️ Je hebt {exp} ervaring uit de prestigebank gehaald. Kom snel terug!"
 
+msgid "Support team: private messages"
+msgstr ""
+
 msgid "DM Timed Out"
 msgstr ""
 
 msgid ""
-"It seems like nothing has been said here for a long time, so I've gone ahead "
-"and closed your ticket, deleting its history. Thanks for using DuckHunt DM "
-"support. If you need anything else, feel free to open a new ticket by "
-"sending a message here."
+"Tickets expire after 24 hours of inactivity.\n"
+"Got a question? Ask it here or in [the support server](https://duckhunt.me/"
+"support).\n"
+"Thank you for using the DuckHunt ticket system!"
 msgstr ""
 
 msgid "Support server"
@@ -1798,15 +2189,14 @@ msgid ""
 msgstr ""
 
 msgid ""
-"Welcome to DuckHunt private messages support.\n"
-"Messages here are relayed to a select group of volunteers and bot moderators "
-"to help you use the bot. For general questions, we also have a support "
-"server [here](https://duckhunt.me/support).\n"
-"If you opened the ticket by mistake, just say `close` and we'll close it for "
-"you, otherwise, we'll get back to you in a few minutes."
+"DMing any message to the bot will open a ticket.\n"
+"You have a question? [Ask it](https://dontasktoask.com) to our human "
+"volunteers.\n"
+"You opened the ticket by mistake? Type `close` (*once, no prefix needed*) "
+"and we, human volunteers will close it."
 msgstr ""
 
-msgid "Support tickets are deleted after 24 hours of inactivity"
+msgid "Support tickets are automatically deleted after 24 hours of inactivity"
 msgstr ""
 
 msgid "Attachments persistence"
@@ -1821,10 +2211,10 @@ msgid "This is not how you invite DuckHunt."
 msgstr ""
 
 msgid ""
-"DuckHunt, like other discord bots, can't join servers by using an invite "
-"link.\n"
-"You instead have to be a server Administrator and to invite the bot by "
-"following [this guide](https://duckhunt.me/docs/bot-administration/admin-"
+"To invite DuckHunt, you need :\n"
+"- To be a server Administrator.\n"
+"- To click on the [following link](https://duckhunt.me/invite)\n"
+"More info on [this guide](https://duckhunt.me/docs/bot-administration/admin-"
 "quickstart). If you need more help, you can ask here and we'll get back to "
 "you."
 msgstr ""
@@ -1840,6 +2230,9 @@ msgid ""
 "DuckHunt DM support. Keep in mind, sending another message here will open a "
 "new ticket!\n"
 "In the meantime, here's a nice duck picture for you to look at !"
+msgstr ""
+
+msgid "❌ Can't send a message to this user: {e}."
 msgstr ""
 
 msgid "❌ There is no tag with that name."
@@ -1863,6 +2256,15 @@ msgid "Your language preference wasn't changed."
 msgstr ""
 
 msgid "Your preferred language is now {new_language}."
+msgstr ""
+
+msgid "Images"
+msgstr ""
+
+msgid "That artist is not known. Choose either Calgeka or Globloxmen."
+msgstr ""
+
+msgid "Admin: Settings"
 msgstr ""
 
 msgid "You can view the channel settings here: "
@@ -1897,6 +2299,9 @@ msgstr "🦘 Australische instellingen zijn op dit kanaal toegepast."
 
 msgid "There will be very big ducks on this channel."
 msgstr "☢ Er zullen zeer grote eenden op dit kanaal komen🍀."
+
+msgid "Your math test will start soon."
+msgstr ""
 
 msgid "The server prefix is set to `{prefix}`."
 msgstr "Het servervoorvoegsel is ingesteld op '{prefix}'."
@@ -2099,8 +2504,8 @@ msgid ""
 "⚠️️ You should not set that higher than {maximum_value}, however, you have "
 "the required permissions to proceed. The number of ducks per day is limited "
 "to ensure resources are used fairly.\n"
-" Please say `Yes` to proceed as requested, with {value} ducks per day on the "
-"channel."
+"Please click `Confirm` to proceed as requested, with {value} ducks per day "
+"on the channel."
 msgstr ""
 
 msgid "🛑 Operation cancelled."
@@ -2169,8 +2574,8 @@ msgstr ""
 "❌️ Je moet een lagere waarde opgeven dan die is ingesteld in "
 "`super_ducks_max_life`!"
 
-msgid "On {channel.mention}, super ducks will get a maximum of {value} lives."
-msgstr "Op {channel.mention} krijgen supereenden maximaal {value} levens."
+msgid "On {channel.mention}, super ducks will get a minimum of {value} lives."
+msgstr "Op {channel.mention} krijgen supereenden minimaal {value} levens."
 
 msgid ""
 "❌️ You need to provide a higher value than the one set in "
@@ -2179,8 +2584,8 @@ msgstr ""
 "❌️ Je moet een hogere waarde opgeven dan die is ingesteld in "
 "`super_ducks_min_life`!"
 
-msgid "On {channel.mention}, super ducks will get a minimum of {value} lives."
-msgstr "Op {channel.mention} krijgen supereenden minimaal {value} levens."
+msgid "On {channel.mention}, super ducks will get a maximum of {value} lives."
+msgstr "Op {channel.mention} krijgen supereenden maximaal {value} levens."
 
 msgid "On {channel.mention}, anti-trigger wording is enabled."
 msgstr ""
@@ -2306,6 +2711,22 @@ msgstr "❌ {target.mention}, je kunt jezelf niet bannen!"
 msgid "{target.mention} now has a access of {level.name}."
 msgstr "{target.mention} heeft nu toegang tot {level.name}."
 
+msgid ""
+"The landmines game is enabled in {channel.mention}, users can trip on "
+"landmines and earn points here."
+msgstr ""
+
+msgid ""
+"The landmines game is disabled in {channel.mention}, users can't trip on "
+"landmines and earn points here."
+msgstr ""
+
+msgid "Members can run landmines commands in {channel.mention}."
+msgstr ""
+
+msgid "Members can't run landmines commands in {channel.mention}"
+msgstr ""
+
 msgid "You'll now be pinged in replies from the bot."
 msgstr "Je wordt nu gepingt in antwoorden van de bot."
 
@@ -2314,6 +2735,9 @@ msgstr "Je wordt nu NIET gepingt in antwoorden van de bot."
 
 msgid "Your language is set to `{language}` [{language_name}]."
 msgstr "Uw taal is ingesteld op `{language}` [{language_name}]."
+
+msgid "Shop"
+msgstr ""
 
 msgid "❌ Whoops, you have too many bullets in your weapon already."
 msgstr "❌ Oeps, je hebt al te veel kogels in je wapen."
@@ -2622,11 +3046,9 @@ msgid "❌ You already use a kill license."
 msgstr "❌ Je gebruikt al een kill-licentie."
 
 msgid ""
-"💸 You bought a kill licence. Accidental kills are now allowed. [Bought: -"
+"💸 You bought a kill license. Accidental kills are now allowed. [Bought: -"
 "{ITEM_COST} exp, total {db_hunter.experience} exp]"
 msgstr ""
-"💸 Je hebt een moordlicentie gekocht. Doden door ongelukken zijn nu "
-"toegestaan. [Gekocht: -{ITEM_COST} exp, totaal {db_hunter.experience} exp]"
 
 msgid "❌ You already have an automatic reloader."
 msgstr "❌ Je hebt al een automatische herlader."
@@ -2662,6 +3084,9 @@ msgstr ""
 "genoemd worden in `{ctx.prefix}credits`. **Wil je helpen deze bot te "
 "vertalen ?** Neem contact op met Eyesofcreeper#0001 op de supportserver "
 "(`{ctx.prefix}invite`). Bedankt!"
+
+msgid "Miscellaneous"
+msgstr ""
 
 msgid "Pong. — Time taken: {miliseconds}ms"
 msgstr "Pong. — Tijd genomen: {miliseconds}ms"
@@ -2763,6 +3188,9 @@ msgstr ""
 msgid "{exp} experience"
 msgstr "{exp} ervaring"
 
+msgid "Statistics"
+msgstr ""
+
 msgid "{target.name} statistics (click me!)."
 msgstr "{target.name} statistieken (klik me!)."
 
@@ -2786,9 +3214,6 @@ msgstr "{level_reliability} % (Werkelijk: {real_reliability} %)"
 
 msgid "Reliability"
 msgstr "Betrouwbaarheid"
-
-msgid "Prestige"
-msgstr ""
 
 msgid "Level {level}"
 msgstr ""
@@ -3011,6 +3436,9 @@ msgstr ""
 "niet gestopt ... Je kunt`{ctx.prefix}settings enabled False` gebruiken om "
 "het spel te stoppen."
 
+msgid "Support team: misc"
+msgstr ""
+
 msgid "Most used commands"
 msgstr "Meest gebruikte commando's"
 
@@ -3033,6 +3461,9 @@ msgid "{u} uses, {r} revisions."
 msgstr ""
 
 msgid "Page {current_page}/{maximum} ({entries} tags)"
+msgstr ""
+
+msgid "Support: tags"
 msgstr ""
 
 msgid "❌ You didn't specify what you want your tag to say."
@@ -3212,6 +3643,10 @@ msgstr ""
 "Als je de struiken rond de eend doorzoekt, vind je... **Veel struiken**."
 
 msgid ""
+"Searching the bushes around the duck, you found... **An USB-C charger**."
+msgstr ""
+
+msgid ""
 "Searching the bushes around the duck, you found... **A rare duck pin**."
 msgstr ""
 "Als je de struiken rond de eend doorzoekt, vind je... **Een zeldzame "
@@ -3343,16 +3778,6 @@ msgid ""
 "a random color."
 msgstr ""
 
-msgid "Use {prefix}{help} [command] for more info on a command."
-msgstr ""
-"Gebruik {prefix}{help} [commando] voor meer informatie over een commando."
-
-msgid "No Category"
-msgstr "Geen categorie"
-
-msgid "{cog_name} Commands"
-msgstr "{cog_name} Commando's"
-
 msgid "normal"
 msgstr "Normaal"
 
@@ -3404,6 +3829,9 @@ msgid ""
 msgstr ""
 "{hugger.mention} knuffelde de eend. Zo schattig! [**Knuffel**: +{experience} "
 "exp]"
+
+msgid "<:Wizzz:505828171397070848> Wizzz huggy ducky! So cute!"
+msgstr ""
 
 msgid ""
 "{hugger.mention} tried to hug the duck. So cute! Unfortunately, the duck "
@@ -4139,8 +4567,8 @@ msgstr "stagiair"
 msgid "duck misser"
 msgstr "eendenmisser"
 
-msgid "member of the Comitee Against Ducks"
-msgstr "lid van het Comité Tegen Eenden"
+msgid "member of the Committee Against Ducks"
+msgstr ""
 
 msgid "duck hater"
 msgstr "eendenhater"
@@ -4264,3 +4692,15 @@ msgstr "Je bent een level omhoog gegaan!"
 
 msgid "You leveled down!"
 msgstr "Je bent een level omlaag gegaan!"
+
+msgid "❌ You cannot run this command."
+msgstr ""
+
+msgid "❌ You are not allowed to click on this button"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Confirm"
+msgstr ""

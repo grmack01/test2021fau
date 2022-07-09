@@ -27,6 +27,7 @@ from utils.ducks_config import max_ducks_per_day
 from utils.interaction import create_and_save_webhook
 from utils.levels import get_level_info_from_id
 from utils.models import get_from_db, DiscordMember, DiscordChannel, SunState
+from utils.views import ConfirmView
 
 SECOND = 1
 MINUTE = 60 * SECOND
@@ -34,7 +35,15 @@ HOUR = 60 * MINUTE
 DAY = 24 * HOUR
 
 
+def _(message):
+    return message
+
+
 class SettingsCommands(Cog):
+    display_name = _("Admin: Settings")
+    help_color = 'red'
+    help_priority = 4
+
     @commands.group(aliases=["set"])
     async def settings(self, ctx: MyContext):
         """
@@ -823,20 +832,17 @@ class SettingsCommands(Cog):
             elif value > maximum_value:
                 db_member = await get_from_db(ctx.author)
                 if db_member.get_access_level() >= models.AccessLevel.BOT_MODERATOR:
-                    await ctx.send(_(
-                        "⚠️️ You should not set that higher than {maximum_value}, however, you have the required permissions to proceed. "
-                        "The number of ducks per day is limited to ensure resources are used fairly.\n "
-                        "Please say `Yes` to proceed as requested, with {value} ducks per day on the channel.",
-                        maximum_value=maximum_value,
-                        value=int(value),
-                    ))
+                    res = await ConfirmView(ctx, _).send(
+                        _(
+                            "⚠️️ You should not set that higher than {maximum_value}, however, you have the required permissions to proceed. "
+                            "The number of ducks per day is limited to ensure resources are used fairly.\n"
+                            "Please click `Confirm` to proceed as requested, with {value} ducks per day on the channel.",
+                            maximum_value=maximum_value,
+                            value=int(value),
+                        ),
+                    )
 
-                    def check(message: discord.Message):
-                        return ctx.author == message.author and message.content.lower() == "yes"
-
-                    try:
-                        await self.bot.wait_for('message', timeout=20, check=check)
-                    except asyncio.TimeoutError:
+                    if not res:
                         await ctx.send(_("🛑 Operation cancelled."))
                         return
 
@@ -985,7 +991,7 @@ class SettingsCommands(Cog):
             db_channel.super_ducks_max_life = value
             await db_channel.save()
 
-        await ctx.send(_("On {channel.mention}, super ducks will get a minimum of {value} lives.",
+        await ctx.send(_("On {channel.mention}, super ducks will get a maximum of {value} lives.",
                          channel=ctx.channel,
                          value=db_channel.super_ducks_max_life))
 
@@ -1005,7 +1011,7 @@ class SettingsCommands(Cog):
 
         if db_channel.anti_trigger_wording:
             await ctx.send(_("On {channel.mention}, anti-trigger wording is enabled.",
-                             channel=ctx.channel,))
+                             channel=ctx.channel, ))
         else:
             await ctx.send(_("On {channel.mention}, anti-trigger wording is disabled.",
                              channel=ctx.channel
@@ -1316,6 +1322,48 @@ class SettingsCommands(Cog):
         await db_member.save()
 
         await ctx.send(_("{target.mention} now has a access of {level.name}.", level=level, target=target))
+
+    # Landmines settings #
+
+    @settings.command(aliases=["landmines_enable", "landmines_disabled", "landmines_disable", "landmines_on", "landmines_off"])
+    @checks.needs_access_level(models.AccessLevel.ADMIN)
+    async def landmines_enabled(self, ctx: MyContext, value: bool = None):
+        """
+        Allow the landmines game to take place here.
+
+        This means that messages sent here will award points, and mines can be stpped on here.
+        """
+        db_channel = await get_from_db(ctx.channel)
+        _ = await ctx.get_translate_function()
+
+        if value is not None:
+            db_channel.landmines_enabled = value
+            await db_channel.save()
+
+        if db_channel.landmines_enabled:
+            await ctx.send(_("The landmines game is enabled in {channel.mention}, users can trip on landmines and earn points here.", channel=ctx.channel))
+        else:
+            await ctx.send(_("The landmines game is disabled in {channel.mention}, users can't trip on landmines and earn points here.", channel=ctx.channel))
+
+    @settings.command(aliases=["landmines_commands_enable", "landmines_commands_disabled", "landmines_commands_disable", "landmines_commands_on", "landmines_commands_off"])
+    @checks.needs_access_level(models.AccessLevel.ADMIN)
+    async def landmines_commands_enabled(self, ctx: MyContext, value: bool = None):
+        """
+        Allow landmines commands to be ran in this channel.
+
+        This is useful to limit defuses, stats and more to a selected channel.
+        """
+        db_channel = await get_from_db(ctx.channel)
+        _ = await ctx.get_translate_function()
+
+        if value is not None:
+            db_channel.landmines_commands_enabled = value
+            await db_channel.save()
+
+        if db_channel.landmines_commands_enabled:
+            await ctx.send(_("Members can run landmines commands in {channel.mention}.", channel=ctx.channel))
+        else:
+            await ctx.send(_("Members can't run landmines commands in {channel.mention}", channel=ctx.channel))
 
     # User settings #
 

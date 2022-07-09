@@ -8,17 +8,29 @@ import discord
 
 from aiohttp import web
 from discord.ext import commands
+from tortoise import timezone
+
 from utils.cog_class import Cog
 from typing import Tuple, List
 from utils import checks
 from utils.ctx_class import MyContext
 from utils.inventory_items import Voted
-from utils.models import DiscordUser, get_from_db, BotList, Vote, Player, get_user_inventory
+from utils.models import DiscordUser, get_from_db, BotList, Vote, Player
+
+
+def _(message):
+    return message
 
 
 class BotsListVoting(Cog):
+    display_name = _("Voting")
+    help_priority = 11
+    help_color = 'green'
+
     def __init__(self, bot, *args, **kwargs):
         super().__init__(bot, *args, **kwargs)
+
+    async def cog_load(self):
         self.statcord_api = statcord.Client(self.bot, self.config()['statcord_token'],
                                             custom1=self.statcord_custom_value_ducks_spawned,
                                             custom2=self.statcord_custom_value_players_count)
@@ -173,7 +185,7 @@ class BotsListVoting(Cog):
 
             if last_vote:
                 # We wait for five more minutes just in case clocks desync'ed
-                if datetime.datetime.now(datetime.timezone.utc) > (last_vote.at + vote_every + datetime.timedelta(minutes=5)):
+                if timezone.now() > (last_vote.at + vote_every + datetime.timedelta(minutes=5)):
                     return True
                 else:
                     return False

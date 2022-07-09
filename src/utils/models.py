@@ -86,7 +86,7 @@ class SupportTicket(Model):
             reason = ""
 
         self.closed = True
-        self.closed_at = datetime.datetime.utcnow()
+        self.closed_at = timezone.now()
         self.closed_by = by_user
         self.close_reason = reason
 
@@ -220,6 +220,9 @@ class DiscordChannel(Model):
     use_webhooks = fields.BooleanField(default=True)
     use_emojis = fields.BooleanField(default=True)
     enabled = fields.BooleanField(default=False)
+
+    landmines_commands_enabled = fields.BooleanField(default=False)  # Can members run landmine commands here
+    landmines_enabled = fields.BooleanField(default=False)  # Do messages sent here count in the game ?
 
     anti_trigger_wording = fields.BooleanField(default=False)
 
@@ -433,18 +436,19 @@ def get_valid_words(message_content) -> typing.List[str]:
     words = []
 
     for word in set(cleaned_content.lower().split()):
-        if len(word) >= 3:
+        if 3 <= len(word) <= 40 and (len(word) > 25 or len(word) < 15 or not set(word).issubset(set(string.digits))):
             words.append(word)
 
     return words
 
 
-class Event2021UserData(Model):
-    # See Inventory for why this isn't a OneToOneField.
-    landmines_bought: fields.ReverseRelation['Event2021Landmines']
-    landmines_stopped: fields.ReverseRelation['Event2021Landmines']
+class LandminesUserData(Model):
+    landmines_bought: fields.ReverseRelation['LandminesPlaced']
+    landmines_stopped: fields.ReverseRelation['LandminesPlaced']
 
-    user_id = fields.BigIntField(pk=True)
+    # This is waiting for a fix of https://github.com/tortoise/tortoise-orm/issues/822
+    member: fields.ForeignKeyRelation["DiscordMember"] = \
+        fields.OneToOneField('models.DiscordMember', related_name='landmines', on_delete=fields.CASCADE, db_index=True)
 
     # General statistics
     first_played = fields.DatetimeField(auto_now_add=True)
@@ -462,6 +466,7 @@ class Event2021UserData(Model):
 
     ## Defuse kits
     defuse_kits_bought = fields.IntField(default=0)
+    shields_bought = fields.IntField(default=0)
 
     def add_points_for_message(self, message_content):
         words = get_valid_words(message_content)
@@ -471,7 +476,7 @@ class Event2021UserData(Model):
             self.messages_sent += 1
             earned = max(0, int((words_count + random.randint(-1, words_count))))
 
-            if self.points_current <= 0:
+            if self.points_current <= -10:
                 earned *= max(2, int(abs(self.points_current) / 1000) + 2)
 
             self.points_acquired += earned
@@ -481,15 +486,14 @@ class Event2021UserData(Model):
             return False
 
     def __str__(self):
-        return f"@{self.user_id} 2021 event data"
+        return f"@{self.member} landmines data"
 
     class Meta:
-        table = 'event2021userdata'
+        table = 'landmines_userdata'
 
 
-class Event2021Landmines(Model):
-    placed_by = fields.ForeignKeyField('models.Event2021UserData', related_name='landmines_bought',
-                                      on_delete=fields.CASCADE)
+class LandminesPlaced(Model):
+    placed_by = fields.ForeignKeyField('models.LandminesUserData', related_name='landmines_bought', on_delete=fields.CASCADE)
 
     placed = fields.DatetimeField(auto_now_add=True)
     word = fields.CharField(max_length=50)
@@ -501,14 +505,14 @@ class Event2021Landmines(Model):
     tripped = fields.BooleanField(default=False)
     disarmed = fields.BooleanField(default=False)
 
-    stopped_by = fields.ForeignKeyField('models.Event2021UserData', null=True, blank=True, on_delete=fields.SET_NULL,
+    stopped_by = fields.ForeignKeyField('models.LandminesUserData', null=True, blank=True, on_delete=fields.SET_NULL,
                                         related_name='landmines_stopped')
     stopped_at = fields.DatetimeField(null=True)
 
     def base_value(self) -> int:
         return self.value * len(self.word)
 
-    def value_for(self, db_target: Event2021UserData) -> int:
+    def value_for(self, db_target: LandminesUserData) -> int:
         base_value = self.base_value()
 
         current_points = db_target.points_current
@@ -523,17 +527,43 @@ class Event2021Landmines(Model):
         return max(10, int(beginner_value))
 
     def __str__(self):
-        return f"{self.placed_by.user_id} 2021 event landmine on {self.word} for {self.value}"
+        return f"{self.placed_by.member_id} landmine on {self.word} for {self.value}"
 
     class Meta:
-        table = 'event2021landmines'
+        table = 'landmines_placed'
+
+
+class LandminesProtects(Model):
+    protected_by = fields.ForeignKeyField('models.LandminesUserData', related_name='words_protected', on_delete=fields.CASCADE)
+    placed = fields.DatetimeField(auto_now_add=True)
+    protect_count = fields.IntField(default=0)
+    word = fields.CharField(max_length=50)
+    message = fields.CharField(blank=True, default="", max_length=2000)
+
+    def __str__(self):
+        return f"{self.protected_by.member} protected word on {self.word}"
+
+    class Meta:
+        table = 'landmines_protected'
+
+
+async def get_word_protect_for(guild, word):
+    if not isinstance(guild, DiscordGuild):
+        db_guild = await get_from_db(guild)
+    else:
+        db_guild = guild
+
+    return await LandminesProtects \
+        .filter(word=word) \
+        .filter(protected_by__member__guild=db_guild) \
+        .first()
 
 
 class UserInventory(Model):
-    # Okay, tortoise suck big time on this
+    # There is another bug in tortoise preventing this.
     # But you can't add a primary key on a ForeignKey like you can in django
     # Or you won't be able to save the model
-    # So, until they fix https://github.com/tortoise/tortoise-orm/issues/443,
+    # So, until they fix https://github.com/tortoise/tortoise-orm/issues/822
     # I'm defining the field as a BigIntField which should hopefully fix the save issues
     # But we will loose all the fk goodness such as prefetching, CASCADING, ...
     # Welp.
@@ -545,18 +575,18 @@ class UserInventory(Model):
 
     # Boxes
     lootbox_welcome_left = fields.IntField(default=1)
-    lootbox_boss_left    = fields.IntField(default=0)
-    lootbox_vote_left    = fields.IntField(default=0)
+    lootbox_boss_left = fields.IntField(default=0)
+    lootbox_vote_left = fields.IntField(default=0)
 
     # Unobtainable items
     item_vip_card_left = fields.IntField(default=0)
 
     # Loot
-    item_mini_exp_boost_left   = fields.IntField(default=0)
-    item_norm_exp_boost_left   = fields.IntField(default=0)
-    item_maxi_exp_boost_left   = fields.IntField(default=0)
-    item_one_bullet_left       = fields.IntField(default=0)
-    item_spawn_ducks_left      = fields.IntField(default=0)
+    item_mini_exp_boost_left = fields.IntField(default=0)
+    item_norm_exp_boost_left = fields.IntField(default=0)
+    item_maxi_exp_boost_left = fields.IntField(default=0)
+    item_one_bullet_left = fields.IntField(default=0)
+    item_spawn_ducks_left = fields.IntField(default=0)
     item_refill_magazines_left = fields.IntField(default=0)
 
     def __str__(self):
@@ -576,7 +606,6 @@ class DiscordUser(Model):
     support_tickets: fields.ReverseRelation[SupportTicket]
     closed_tickets: fields.ReverseRelation[SupportTicket]
     # inventory: fields.OneToOneRelation[UserInventory]
-
 
     members: fields.ReverseRelation["DiscordMember"]
 
@@ -881,7 +910,7 @@ class Player(Model):
         channel: discord.TextChannel = guild.get_channel(db_channel.discord_id)
 
         # Now is time to give roles.
-        roles_mapping:    typing.Dict[str, str] = db_channel.levels_to_roles_ids_mapping
+        roles_mapping: typing.Dict[str, str] = db_channel.levels_to_roles_ids_mapping
         prestige_mapping: typing.Dict[str, str] = db_channel.prestige_to_roles_ids_mapping
         #             (int-like) level nb, discord role ID
 
@@ -963,6 +992,8 @@ class Player(Model):
 
 
 class DiscordMember(Model):
+    landmines: fields.ReverseRelation['LandminesUserData']
+
     id = fields.IntField(pk=True)
     guild: fields.ForeignKeyRelation[DiscordGuild] = \
         fields.ForeignKeyField('models.DiscordGuild',
@@ -1133,6 +1164,28 @@ class TagAlias(Model):
         return f"{self.name} -> {self.tag.name}"
 
 
+class BotState(Model):
+    datetime = fields.DatetimeField(auto_now_add=True)
+
+    measure_interval = fields.IntField()  # The event stats are (usually) based on a 10 minutes interval
+    ws_send = fields.IntField()
+    ws_recv = fields.IntField()
+    messages = fields.IntField()
+    commands = fields.IntField()
+    command_errors = fields.IntField()
+    command_completions = fields.IntField()
+
+    guilds = fields.IntField()
+    users = fields.IntField()
+    shards = fields.IntField()
+    ready = fields.BooleanField()
+    ws_ratelimited = fields.BooleanField()
+    ws_latency = fields.FloatField()  # miliseconds
+
+    class Meta:
+        table = 'botstate'
+
+
 async def get_tag(name, increment_uses=True) -> typing.Optional[Tag]:
     tag: typing.Optional[Tag] = await Tag.filter(name=name).first()
     if tag:
@@ -1169,7 +1222,7 @@ async def get_from_db(discord_object, as_user=False):
                 await db_obj.save()
 
             return db_obj
-        elif isinstance(discord_object, discord.TextChannel):
+        elif isinstance(discord_object, discord.TextChannel) or isinstance(discord_object, discord.VoiceChannel):
             db_obj = await DiscordChannel.filter(discord_id=discord_object.id).first()
             if not db_obj:
                 db_obj = DiscordChannel(discord_id=discord_object.id, name=discord_object.name,
@@ -1190,7 +1243,7 @@ async def get_from_db(discord_object, as_user=False):
                                        user=await get_from_db(discord_object, as_user=True))
                 await db_obj.save()
             return db_obj
-        elif isinstance(discord_object, discord.User) or isinstance(discord_object, discord.Member) and as_user:
+        elif isinstance(discord_object, discord.User) or isinstance(discord_object, discord.ClientUser) or (isinstance(discord_object, discord.Member) and as_user):
             db_obj = await DiscordUser.filter(discord_id=discord_object.id).first()
             if not db_obj:
                 db_obj = DiscordUser(discord_id=discord_object.id, name=discord_object.name,
@@ -1203,6 +1256,11 @@ async def get_from_db(discord_object, as_user=False):
                 await db_obj.save()
 
             return db_obj
+        elif isinstance(discord_object, discord.Thread):
+            return await get_from_db(discord_object.parent)
+        else:
+            obj_type_name = type(discord_object).__name__
+            print(f"Unknown object type passed to get_from_db <type:{obj_type_name}>, <obj:{discord_object}>")
 
 
 async def get_random_player(channel: typing.Union[DiscordChannel, discord.TextChannel]):
@@ -1233,34 +1291,48 @@ async def get_user_inventory(user: typing.Union[DiscordUser, discord.User, disco
     else:
         db_user = user
 
-    async with DB_LOCKS[(db_user, )]:
+    async with DB_LOCKS[(db_user,)]:
         inventory, created = await UserInventory.get_or_create(user_id=db_user.discord_id)
 
     return inventory
 
 
-async def get_user_eventdata(user: typing.Union[DiscordUser, discord.User, discord.Member]) -> Event2021UserData:
-    if not isinstance(user, DiscordUser):
-        db_user = await get_from_db(user, as_user=True)
+async def get_member_landminesdata(member: typing.Union[DiscordMember, discord.Member]) -> LandminesUserData:
+    if not isinstance(member, DiscordMember):
+        db_member = await get_from_db(member)
     else:
-        db_user = user
+        db_member = member
 
-    async with DB_LOCKS[(db_user, )]:
-        eventdata, created = await Event2021UserData.get_or_create(user_id=db_user.discord_id)
+    async with DB_LOCKS[(db_member,)]:
+        eventdata, created = await LandminesUserData.get_or_create(member_id=db_member.pk)
 
     return eventdata
 
 
-async def get_landmine(message_content: str) -> typing.Optional[Event2021Landmines]:
+async def get_landmine(guild: typing.Union[DiscordGuild, discord.Guild], message_content: str, as_list:bool = False) -> typing.Union[typing.Optional[LandminesPlaced], typing.List[LandminesPlaced]]:
+    if not isinstance(guild, DiscordGuild):
+        db_guild = await get_from_db(guild)
+    else:
+        db_guild = guild
+
     words = get_valid_words(message_content)
     if words:
-        return await Event2021Landmines\
-            .filter(tripped=False, disarmed=False)\
-            .order_by('placed')\
-            .filter(word__in=words)\
-            .first()
+        qs = LandminesPlaced \
+            .filter(tripped=False, disarmed=False) \
+            .order_by('placed') \
+            .filter(word__in=words) \
+            .filter(placed_by__member__guild=db_guild) \
+
+        if as_list:
+            return await qs
+        else:
+            return await qs.first()
+
     else:
-        return None
+        if as_list:
+            return []
+        else:
+            return None
 
 
 async def get_enabled_channels():

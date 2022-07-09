@@ -5,6 +5,8 @@ from typing import List
 import discord
 from babel.dates import format_timedelta
 from discord.ext import tasks
+from discord.utils import utcnow
+from tortoise import timezone
 
 from utils.cog_class import Cog
 from utils.inventory_items import FoieGras
@@ -47,12 +49,15 @@ class DuckBoss(Cog):
             description="React with 🔫 to kill it.",
         )
 
-        new_embed.set_image(url="https://media.discordapp.net/attachments/795225915248214036/795404123443953705/boss_Calgeka.png")
         new_embed.add_field(name="Health", value=f"{boss_life - bangs}/{boss_life}")
         if boss_message:
-            time_delta = datetime.datetime.now() - boss_message.created_at
+            time_delta = timezone.now() - boss_message.created_at
+            old_embed = boss_message.embeds[0]
+            new_embed.set_image(url=old_embed.image.url)
             new_embed.set_footer(text=f"The boss spawned {format_timedelta(time_delta, locale='en_US')} ago")
         else:
+            new_embed.set_image(url=random.choice(["https://media.discordapp.net/attachments/795225915248214036/795404123443953705/boss_Calgeka.png",
+                                                   "https://media.discordapp.net/attachments/795225915248214036/873971254888108092/boss_llama_Calgeka.png"]))
             new_embed.set_footer(text=f"The boss just spawned")
 
         return new_embed
@@ -60,7 +65,7 @@ class DuckBoss(Cog):
     @tasks.loop(minutes=1)
     async def background_loop(self):
         channel = self.bot.get_channel(self.config()['boss_channel_id'])
-        latest_messages = await channel.history(limit=1).flatten()
+        latest_messages = [m async for m in channel.history(limit=1)]
 
         if not latest_messages:
             boss_message = None
@@ -85,7 +90,7 @@ class DuckBoss(Cog):
 
             if bangs >= boss_life:
                 # Kill the boss
-                users = await reaction.users().flatten()
+                users = [u async for u in reaction.users()]
                 ids = [u.id for u in users]
                 discordusers: List[DiscordUser] = await DiscordUser.filter(discord_id__in=ids).only('boss_kills', 'discord_id').all()
 
@@ -99,12 +104,15 @@ class DuckBoss(Cog):
                     color=discord.Color.red(),
                     description=f"Thanks to the {bangs} players who helped in this quest. Check your inventories with `dh!inv` for these drops.",
                 )
-
-                new_embed.set_image(url=random.choice(["https://cdn.discordapp.com/attachments/795225915248214036/807309301181055056/deadboss_Calgeka.png",
-                                                       "https://cdn.discordapp.com/attachments/795225915248214036/807309304935219230/deadboss_alt1_Calgeka.png"]))
+                if "boss_llama_Calgeka.png" in str(boss_message.embeds[0].image.url):
+                    # Special case the llama.
+                    new_embed.set_image(url="https://cdn.discordapp.com/attachments/795225915248214036/875072800866586654/deadboss_llama_Calgeka.png")
+                else:
+                    new_embed.set_image(url=random.choice(["https://cdn.discordapp.com/attachments/795225915248214036/807309301181055056/deadboss_Calgeka.png",
+                                                           "https://cdn.discordapp.com/attachments/795225915248214036/807309304935219230/deadboss_alt1_Calgeka.png"]))
                 new_embed.add_field(name="Health", value=f"0/{boss_life}")
 
-                time_delta = datetime.datetime.now() - boss_message.created_at
+                time_delta = timezone.now() - boss_message.created_at
                 new_embed.set_footer(text=f"The boss lived for {format_timedelta(time_delta, locale='en_US')}.")
 
                 await boss_message.edit(embed=new_embed)

@@ -33,15 +33,18 @@ class RestAPI(Cog):
 
     Api keys (local or global) are uuid4, and look like this : `d84af260-c806-4066-8387-1d5144b7fa72`
     """
+
     def __init__(self, bot, *args, **kwargs):
         super().__init__(bot, *args, **kwargs)
+
+    async def cog_load(self):
         self.app = web.Application()
         self.cors = aiohttp_cors.setup(self.app)
         self.runner = web.AppRunner(self.app, access_log=self.bot.logger.logger)
         self.site = None
-        bot.loop.create_task(self.run())
+        self.bot.loop.create_task(self.run())
 
-    def cog_unload(self):
+    async def cog_unload(self):
         self.bot.logger.info(f"DuckHunt JSON API is shutting down...")
         self.bot.loop.create_task(self.site.stop())
 
@@ -124,7 +127,7 @@ class RestAPI(Cog):
         """
         /channels/<channel_id>/settings
 
-        Get information about a specific channel ID
+        Get settings for a specific channel ID
         """
         channel = self.bot.get_channel(int(request.match_info['channel_id']))
 
@@ -141,14 +144,15 @@ class RestAPI(Cog):
         """
         /channels/<channel_id>/top
 
-        Get players data, ordered by experience
+        Get players data for a specific channel ID, ordered by experience
         """
         channel = self.bot.get_channel(int(request.match_info['channel_id']))
 
         if not channel:
             raise HTTPNotFound(reason="Unknown channel")
 
-        players = await Player.all().filter(channel__discord_id=channel.id).order_by('-experience').prefetch_related("member__user")
+        players = await Player.all().filter(channel__discord_id=channel.id).order_by('-experience').prefetch_related(
+            "member__user")
 
         if not players:
             raise HTTPNotFound(reason="Unknown channel in database")
@@ -163,16 +167,16 @@ class RestAPI(Cog):
         """
         /channels/<channel_id>/player/<player_id>
 
-        Get players data, ordered by experience
+        Get information for a specific player ID and channel ID
         """
         channel = self.bot.get_channel(int(request.match_info['channel_id']))
 
         # await self.authenticate_request(request, channel=channel)
 
-        player = await Player\
+        player = await Player \
             .filter(channel__discord_id=channel.id,
-                    member__user__discord_id=int(request.match_info['player_id']))\
-            .first()\
+                    member__user__discord_id=int(request.match_info['player_id'])) \
+            .first() \
             .prefetch_related("member__user")
 
         if not player:
@@ -326,17 +330,18 @@ class RestAPI(Cog):
         for route_method, route_path, route_coro in routes:
             resource = self.cors.add(self.app.router.add_resource(route_path))
             route = self.cors.add(
-                    resource.add_route(route_method, route_coro), {
-                        "*": aiohttp_cors.ResourceOptions(
-                            allow_credentials=True,
-                            allow_headers=("X-Requested-With", "Content-Type", "Authorization",),
-                            max_age=3600,
-                        )
+                resource.add_route(route_method, route_coro), {
+                    "*": aiohttp_cors.ResourceOptions(
+                        allow_credentials=True,
+                        allow_headers=("X-Requested-With", "Content-Type", "Authorization",),
+                        max_age=3600,
+                    )
                 })
 
         await self.runner.setup()
         self.site = web.TCPSite(self.runner, listen_ip, listen_port)
         await self.site.start()
+        # noinspection HttpUrlsUsage
         self.bot.logger.info(f"DuckHunt JSON API listening on http://{listen_ip}:{listen_port}")
 
 

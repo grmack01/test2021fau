@@ -27,8 +27,15 @@ class NotEnoughExperience(commands.CheckFailure):
         self.having = having
 
 
+def _(message):
+    return message
+
+
 class ShoppingCommands(Cog):
-    @commands.group(aliases=["buy", "rent", "sh", "sho"])
+    display_name = _("Shop")
+    help_priority = 3
+
+    @commands.group(aliases=["buy", "rent", "sh", "sho"], case_insensitive=True)
     @checks.channel_enabled()
     async def shop(self, ctx: MyContext):
         """
@@ -431,7 +438,10 @@ class ShoppingCommands(Cog):
 
         self.ensure_enough_experience(db_hunter, ITEM_COST)
 
-        await db_hunter.edit_experience_with_levelups(ctx, -ITEM_COST)
+        # We don't want to send a level down message here.
+        # https://github.com/DuckHunt-discord/DHV4/issues/41
+        db_hunter.experience -= ITEM_COST
+
         db_hunter.active_powerups["sand"] = 0
         db_hunter.weapon_sabotaged_by = None
 
@@ -589,7 +599,9 @@ class ShoppingCommands(Cog):
 
         self.ensure_enough_experience(db_hunter, ITEM_COST)
 
-        await db_hunter.edit_experience_with_levelups(ctx, -ITEM_COST)
+        # We don't want to send a level down message here.
+        # https://github.com/DuckHunt-discord/DHV4/issues/41
+        db_hunter.experience -= ITEM_COST
 
         db_target.weapon_sabotaged_by = db_hunter
         db_hunter.bought_items['sabotage'] += 1
@@ -672,7 +684,7 @@ class ShoppingCommands(Cog):
             await ctx.reply(_("💸 You started a mechanical duck on {channel.mention}, it will spawn in 90 seconds. [Bought: -{ITEM_COST} exp].\n**I couldn't DM you this message**", ITEM_COST=ITEM_COST, channel=ctx.channel))
 
     @shop.command(aliases=["26", "kway", "breizh", "rain_coat", "raincoat"])
-    async def coat(self, ctx: MyContext, color: Optional[Coats] = None):
+    async def coat(self, ctx: MyContext, *, color: Optional[Coats] = None):
         """
         Protect yourself from water. If you are already wet, it also can be used as a change. [15 exp/24 hrs]
         """
@@ -737,7 +749,7 @@ class ShoppingCommands(Cog):
         db_hunter.bought_items['kill_licence'] += 1
 
         await db_hunter.save()
-        await ctx.reply(_("💸 You bought a kill licence. Accidental kills are now allowed. "
+        await ctx.reply(_("💸 You bought a kill license. Accidental kills are now allowed. "
                           "[Bought: -{ITEM_COST} exp, total {db_hunter.experience} exp]", db_hunter=db_hunter, ITEM_COST=ITEM_COST))
 
     @shop.command(aliases=["30", "autoreload", "autoreloader", "automatic_reloader", "automaticreloader", "auto_reloader", "auto_reload"])

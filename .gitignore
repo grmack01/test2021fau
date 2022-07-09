@@ -1,0 +1,10 @@
+
+venv/
+
+.idea/
+**/__pycache__/
+**/messages.mo
+cache/
+/src/import_v3_data/DHV3_Players.json
+/src/import_v3_data/DHV3_settings.json
+/src/ducks_spawned_cache.json

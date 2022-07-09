@@ -133,6 +133,8 @@ def resize_image(image_bytes, w_pct, h_pct):
 
 
 class FunOfTheEyes(Cog):
+    hidden = True
+
     @commands.command(aliases=["resize"])
     @needs_access_level(AccessLevel.BOT_MODERATOR)
     @dont_block
@@ -179,9 +181,9 @@ class FunOfTheEyes(Cog):
                     break
             else:
                 if who:
-                    image_bytes = await who.avatar_url_as(format="jpg", size=512).read()
+                    image_bytes = await who.display_avatar.replace(format="jpg", size=512).read()
                 else:
-                    image_bytes = await ctx.author.avatar_url_as(format="jpg", size=512).read()
+                    image_bytes = await ctx.author.display_avatar.replace(format="jpg", size=512).read()
 
             end_dl = time.perf_counter()
             dl_time = round(end_dl - start, 1)

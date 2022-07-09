@@ -333,6 +333,8 @@ class Duck:
                      experience=experience,
                      )
         else:
+            if hugger.id == 296573428293697536:  # ⚜WistfulWizzz⚜#5928
+                return _("<:Wizzz:505828171397070848> Wizzz huggy ducky! So cute!")
             return _(
                 "{hugger.mention} tried to hug the duck. So cute! Unfortunately, the duck hates you, because you killed all his family. [**FAIL**: {experience} exp]",
                 hugger=hugger,
@@ -359,7 +361,7 @@ class Duck:
                 try:
                     await webhook.send(content, **this_webhook_parameters, **kwargs)
                     return
-                except (discord.NotFound, discord.InvalidArgument) as e:
+                except (discord.NotFound, ValueError) as e:
                     db_channel: DiscordChannel = await get_from_db(self.channel)
                     self.bot.logger.warning(f"Removing webhook {webhook.url} on #{self.channel.name} on {self.channel.guild.id} from planification because {e}.")
                     db_channel.webhook_urls.remove(webhook.url)
@@ -459,7 +461,7 @@ class Duck:
 
         bot.ducks_spawned[self.channel].append(self)
 
-    async def shoot(self, args):
+    async def shoot(self, args) -> Optional[bool]:
         if await self.will_frighten():
             return await self.frighten()
 
@@ -469,6 +471,7 @@ class Duck:
             await self.kill(damage, args)
         else:
             await self.hurt(damage, args)
+        return None
 
     async def hug(self, args):
         if self.leave_on_hug:
@@ -482,7 +485,7 @@ class Duck:
         await self.increment_hugs()
         await self.release()
 
-        db_hugger.experience += experience
+        await db_hugger.edit_experience_with_levelups(ctx=self.channel, delta=experience, bot=self.bot)
 
         await db_hugger.save()
 
@@ -700,20 +703,21 @@ class PrDuck(Duck):
                   hurter=hurter,
                   operation=self.operation))
             await self.release()
-            return
+            return False
         except ValueError:
             await self.send(_("{hurter.mention}, Just give me digits !",
                               hurter=hurter))
             await self.release()
-            return
+            return False
 
         if result != self.answer:
             await self.send(_("{hurter.mention}, that's not the correct answer !",
                               hurter=hurter))
             await self.release()
-            return
+            return False
         else:
             await super().shoot(args)
+            return True
 
     async def get_exp_value(self):
         return round(await super().get_exp_value() * 1.2)
@@ -959,7 +963,7 @@ class ArmoredDuck(SuperDuck):
         if self.bot.current_event == Events.UN_TREATY:
             return 1
         minus = 0
-        if random.randint(0, 100) < 90:
+        if random.randint(1, 100) < 90:
             minus = 1
 
         return await super().get_damage() - minus

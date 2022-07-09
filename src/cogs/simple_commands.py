@@ -25,6 +25,10 @@ HOUR = 60 * MINUTE
 DAY = 24 * HOUR
 
 
+def _(message):
+    return message
+
+
 class TranslatorsMenusSource(menus.ListPageSource):
     def __init__(self, ctx: MyContext, translators):
         super().__init__(list(translators.items()), per_page=6)
@@ -70,6 +74,9 @@ async def show_translators_menu(ctx, translators):
 
 
 class SimpleCommands(Cog):
+    display_name = _("Miscellaneous")
+    help_priority = 10
+
     def __init__(self, bot: MyBot, *args, **kwargs):
         super().__init__(bot, *args, **kwargs)
         self.translators_cache = {}
@@ -82,7 +89,7 @@ class SimpleCommands(Cog):
         _ = await ctx.get_translate_function()
 
         t_1 = time.perf_counter()
-        await ctx.trigger_typing()  # tell Discord that the bot is "typing", which is a very simple request
+        await ctx.typing()  # tell Discord that the bot is "typing", which is a very simple request
         t_2 = time.perf_counter()
         time_delta = round((t_2 - t_1) * 1000)  # calculate the time needed to trigger typing
         await ctx.send(_("Pong. — Time taken: {miliseconds}ms",
@@ -254,7 +261,7 @@ class SimpleCommands(Cog):
         """
         I hav long nek
         """
-        await ctx.reply("🦒")\
+        await ctx.reply("🦒")
 
     @commands.command(hidden=True,)
     @checks.channel_enabled()
@@ -288,7 +295,7 @@ class SimpleCommands(Cog):
 
         await asyncio.sleep(int((time_to_wait - 10)/2))
         to_delete = await ctx.reply("⏰ Halfway there...")
-        await asyncio.sleep(int((time_to_wait - 10)/2) )
+        await asyncio.sleep(int((time_to_wait - 10)/2))
         await to_delete.delete()
         to_edit = await ctx.reply("⏰ 10 seconds left...")
         await asyncio.sleep(5)
@@ -324,10 +331,10 @@ class SimpleCommands(Cog):
         elif got_no > no_trigger:
             await message.reply(f"Got {got_no} no votes. Not spawning a boss.")
             return
-        elif got_yes <= yes_trigger:
+        elif got_yes < yes_trigger:
             await message.reply(f"Didn't get enough yes votes ({got_yes} < {yes_trigger}). Not spawning a boss.")
             return
-        elif got_yes <= yes_trigger:
+        elif got_yes >= yes_trigger:
             await message.reply(f"🦆 Alright. I'm spawning a boss. Congratulations.")
             boss_cog = self.bot.get_cog('DuckBoss')
             await boss_cog.spawn_boss()

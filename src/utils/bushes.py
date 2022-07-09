@@ -2,6 +2,7 @@
 import time
 
 from utils.images import get_random_image
+from utils.models import DiscordMember, Player
 
 SECOND = 1
 MINUTE = 60 * SECOND
@@ -42,6 +43,15 @@ class Nothing(BushObject):
 class Bushes(BushObject):
     db = 'trash_bushes'
     took_message = _('Searching the bushes around the duck, you found... **A lot of bushes**.')
+
+
+class USBCCharger(BushObject):
+    db = 'trash_usbc_charger'
+    # TRANSLATORS: This is a joke message that probably only works in French, but try to adapt anyway.
+    #  When translating to french, a magazine is the same as a power supply/a charger,
+    #  so this might make people happy for a second.
+    #  Yes, I am indeed cruel.
+    took_message = _('Searching the bushes around the duck, you found... **An USB-C charger**.')
 
 
 class DuckPin(BushObject):
@@ -122,8 +132,10 @@ class Silencer(BushObject):
     db = 'silencer'
     took_message = _('Searching the bushes around the duck, you found... **A new silencer**.')
 
-    async def give(self, db_channel, db_hunter):
-        db_hunter.active_powerups["silencer"] = int(time.time()) + DAY
+    async def give(self, db_channel, db_hunter: Player):
+        db_hunter.active_powerups["silencer"] = max(int(time.time()), db_hunter.active_powerups["silencer"]) + DAY
+        if db_hunter.prestige >= 6:
+            db_hunter.active_powerups["silencer"] += DAY
         return True
 
 
@@ -140,7 +152,7 @@ del _
 
 # noinspection PyInterpreter
 bushes = {
-    Nothing: 20, Bushes: 20, Picture: 15, DuckPin: 1,
+    Nothing: 20, Bushes: 20, Picture: 15,  USBCCharger: 3, DuckPin: 1,
     Bullet: 20,
     Magazine: 15,
     ExplosiveAmmo: 2, PartialExplosiveAmmo: 6,
